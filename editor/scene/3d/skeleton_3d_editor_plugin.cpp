@@ -150,18 +150,18 @@ void BonePropertiesEditor::_value_changed(const String &p_property, const Varian
 		return;
 	}
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
-	undo_redo->add_undo_property(skeleton, p_property, skeleton->get(p_property));
-	undo_redo->add_do_property(skeleton, p_property, p_value);
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Set Bone Transform"), UndoRedo::MERGE_ENDS);
+	ur->add_undo_property(skeleton, p_property, skeleton->get(p_property));
+	ur->add_do_property(skeleton, p_property, p_value);
 
 	Skeleton3DEditor *se = Skeleton3DEditor::get_singleton();
 	if (se) {
-		undo_redo->add_do_method(se, "update_joint_tree");
-		undo_redo->add_undo_method(se, "update_joint_tree");
+		ur->add_do_method(se, "update_joint_tree");
+		ur->add_undo_method(se, "update_joint_tree");
 	}
 
-	undo_redo->commit_action();
+	ur->commit_action();
 }
 
 void BonePropertiesEditor::_meta_changed(const String &p_property, const Variant &p_value, const String &p_name, bool p_changing) {
@@ -179,13 +179,13 @@ void BonePropertiesEditor::_meta_changed(const String &p_property, const Variant
 		return;
 	}
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Modify metadata '%s' for bone '%s'"), key, skeleton->get_bone_name(bone)));
-	undo_redo->add_do_property(skeleton, p_property, p_value);
-	undo_redo->add_do_method(meta_editors[p_property], "update_property");
-	undo_redo->add_undo_property(skeleton, p_property, skeleton->get_bone_meta(bone, key));
-	undo_redo->add_undo_method(meta_editors[p_property], "update_property");
-	undo_redo->commit_action();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(vformat(TTR("Modify metadata '%s' for bone '%s'"), key, skeleton->get_bone_name(bone)));
+	ur->add_do_property(skeleton, p_property, p_value);
+	ur->add_do_method(meta_editors[p_property], "update_property");
+	ur->add_undo_property(skeleton, p_property, skeleton->get_bone_meta(bone, key));
+	ur->add_undo_method(meta_editors[p_property], "update_property");
+	ur->commit_action();
 }
 
 void BonePropertiesEditor::_meta_deleted(const String &p_property) {
@@ -203,11 +203,11 @@ void BonePropertiesEditor::_meta_deleted(const String &p_property) {
 		return;
 	}
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Remove metadata '%s' from bone '%s'"), key, skeleton->get_bone_name(bone)));
-	undo_redo->add_do_property(skeleton, p_property, Variant());
-	undo_redo->add_undo_property(skeleton, p_property, skeleton->get_bone_meta(bone, key));
-	undo_redo->commit_action();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(vformat(TTR("Remove metadata '%s' from bone '%s'"), key, skeleton->get_bone_name(bone)));
+	ur->add_do_property(skeleton, p_property, Variant());
+	ur->add_undo_property(skeleton, p_property, skeleton->get_bone_meta(bone, key));
+	ur->commit_action();
 
 	emit_signal(SNAME("property_deleted"), p_property);
 }
@@ -230,11 +230,11 @@ void BonePropertiesEditor::_show_add_meta_dialog() {
 void BonePropertiesEditor::_add_meta_confirm() {
 	int bone = Skeleton3DEditor::get_singleton()->get_selected_bone();
 	String name = add_meta_dialog->get_meta_name();
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(vformat(TTR("Add metadata '%s' to bone '%s'"), name, skeleton->get_bone_name(bone)));
-	undo_redo->add_do_method(skeleton, "set_bone_meta", bone, name, add_meta_dialog->get_meta_defval());
-	undo_redo->add_undo_method(skeleton, "set_bone_meta", bone, name, Variant());
-	undo_redo->commit_action();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(vformat(TTR("Add metadata '%s' to bone '%s'"), name, skeleton->get_bone_name(bone)));
+	ur->add_do_method(skeleton, "set_bone_meta", bone, name, add_meta_dialog->get_meta_defval());
+	ur->add_undo_method(skeleton, "set_bone_meta", bone, name, Variant());
+	ur->commit_action();
 }
 
 BonePropertiesEditor::BonePropertiesEditor(Skeleton3D *p_skeleton) {

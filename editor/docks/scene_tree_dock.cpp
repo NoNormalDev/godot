@@ -3127,8 +3127,8 @@ void SceneTreeDock::_create() {
 		const List<Node *> full_selection = editor_selection->get_full_selected_node_list();
 		ERR_FAIL_COND(full_selection.is_empty());
 
-		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-		ur->create_action(TTR("Change type of node(s)"), UndoRedo::MERGE_DISABLE, full_selection.front()->get());
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+		undo_redo->create_action(TTR("Change type of node(s)"), UndoRedo::MERGE_DISABLE, full_selection.front()->get());
 
 		for (Node *n : full_selection) {
 			ERR_FAIL_NULL(n);
@@ -3141,7 +3141,7 @@ void SceneTreeDock::_create() {
 			replace_node(n, new_node);
 		}
 
-		ur->commit_action(false);
+		undo_redo->commit_action(false);
 	} else if (current_option == TOOL_REPARENT_TO_NEW_NODE) {
 		const List<Node *> selection = editor_selection->get_top_selected_node_list();
 		ERR_FAIL_COND(selection.is_empty());
@@ -3254,20 +3254,20 @@ void SceneTreeDock::_create() {
 }
 
 void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node) {
-	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-	ur->create_action(TTR("Change type of node(s)"), UndoRedo::MERGE_DISABLE, p_node);
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Change type of node(s)"), UndoRedo::MERGE_DISABLE, p_node);
 
-	ur->add_do_method(this, "replace_node", p_node, p_by_node, true);
-	ur->add_do_reference(p_by_node);
+	undo_redo->add_do_method(this, "replace_node", p_node, p_by_node, true);
+	undo_redo->add_do_reference(p_by_node);
 
 	_replace_node(p_node, p_by_node, true);
 
-	ur->add_undo_method(this, "replace_node", p_by_node, p_node, false);
-	ur->add_undo_reference(p_node);
+	undo_redo->add_undo_method(this, "replace_node", p_by_node, p_node, false);
+	undo_redo->add_undo_reference(p_node);
 
 	perform_node_replace(nullptr, p_node, p_by_node);
 
-	ur->commit_action(false);
+	undo_redo->commit_action(false);
 }
 
 void SceneTreeDock::_replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties) {
@@ -4447,13 +4447,13 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 		owner = paste_parent;
 	}
 
-	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	if (paste_parent) {
-		ur->create_action(vformat(p_paste_as_sibling ? TTR("Paste Node(s) as Sibling of %s") : TTR("Paste Node(s) as Child of %s"), paste_sibling ? paste_sibling->get_name() : paste_parent->get_name()), UndoRedo::MERGE_DISABLE, edited_scene);
+		undo_redo->create_action(vformat(p_paste_as_sibling ? TTR("Paste Node(s) as Sibling of %s") : TTR("Paste Node(s) as Child of %s"), paste_sibling ? paste_sibling->get_name() : paste_parent->get_name()), UndoRedo::MERGE_DISABLE, edited_scene);
 	} else {
-		ur->create_action(TTR("Paste Node(s) as Root"), UndoRedo::MERGE_DISABLE, edited_scene);
+		undo_redo->create_action(TTR("Paste Node(s) as Root"), UndoRedo::MERGE_DISABLE, edited_scene);
 	}
-	ur->add_do_method(editor_selection, "clear");
+	undo_redo->add_do_method(editor_selection, "clear");
 
 	String target_scene;
 	if (edited_scene) {
@@ -4482,11 +4482,11 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 			paste_parent = dup;
 			owner = dup;
 			dup->set_scene_file_path(String()); // Make sure the scene path is empty, to avoid accidental references.
-			ur->add_do_method(EditorNode::get_singleton(), "set_edited_scene", dup);
+			undo_redo->add_do_method(EditorNode::get_singleton(), "set_edited_scene", dup);
 		} else {
-			ur->add_do_method(paste_parent, "add_child", dup, true);
+			undo_redo->add_do_method(paste_parent, "add_child", dup, true);
 			if (paste_sibling) {
-				ur->add_do_method(paste_parent, "move_child", dup, paste_sibling->get_index() + 1);
+				undo_redo->add_do_method(paste_parent, "move_child", dup, paste_sibling->get_index() + 1);
 			}
 		}
 
@@ -4496,29 +4496,29 @@ List<Node *> SceneTreeDock::paste_nodes(bool p_paste_as_sibling) {
 			// and added to the node_clipboard_edited_scene_owned list.
 			if (d != dup && E2.key->get_owner() == nullptr) {
 				if (node_clipboard_edited_scene_owned.find(const_cast<Node *>(E2.key))) {
-					ur->add_do_method(d, "set_owner", owner);
+					undo_redo->add_do_method(d, "set_owner", owner);
 				}
 			}
 		}
 
 		if (dup != owner) {
-			ur->add_do_method(dup, "set_owner", edited_scene);
+			undo_redo->add_do_method(dup, "set_owner", edited_scene);
 		}
-		ur->add_do_method(editor_selection, "add_node", dup);
+		undo_redo->add_do_method(editor_selection, "add_node", dup);
 
 		if (dup == paste_parent) {
-			ur->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
+			undo_redo->add_undo_method(EditorNode::get_singleton(), "set_edited_scene", (Object *)nullptr);
 		} else {
-			ur->add_undo_method(paste_parent, "remove_child", dup);
+			undo_redo->add_undo_method(paste_parent, "remove_child", dup);
 		}
-		ur->add_do_reference(dup);
+		undo_redo->add_do_reference(dup);
 
 		if (node_clipboard.size() == 1) {
-			ur->add_do_method(EditorNode::get_singleton(), "push_item", dup);
+			undo_redo->add_do_method(EditorNode::get_singleton(), "push_item", dup);
 		}
 	}
 
-	ur->commit_action();
+	undo_redo->commit_action();
 
 	for (KeyValue<Node *, HashMap<Ref<Resource>, Ref<Resource>>> &KV : resources_local_to_scenes) {
 		for (KeyValue<Ref<Resource>, Ref<Resource>> &R : KV.value) {
@@ -4540,7 +4540,7 @@ void SceneTreeDock::paste_node_as_replacement() {
 		if (!new_node) {
 			continue;
 		}
-		EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+		EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 		String old_scene_file_path = selected->get_scene_file_path();
 		String new_scene_file_path = clipboard_node->get_scene_file_path();
 
@@ -4549,13 +4549,13 @@ void SceneTreeDock::paste_node_as_replacement() {
 
 		LocalVector<Node *> old_children;
 
-		ur->create_action(TTR("Paste Node(s) as Replacement"), UndoRedo::MERGE_ALL, selected);
+		undo_redo->create_action(TTR("Paste Node(s) as Replacement"), UndoRedo::MERGE_ALL, selected);
 
 		if (old_is_scene) {
 			for (int i = 0; i < selected->get_child_count(); i++) {
 				Node *child = selected->get_child(i);
 				if (child->get_owner() == selected) {
-					ur->add_do_method(selected, "remove_child", child);
+					undo_redo->add_do_method(selected, "remove_child", child);
 
 					selected->remove_child(child);
 					old_children.push_back(child);
@@ -4563,17 +4563,17 @@ void SceneTreeDock::paste_node_as_replacement() {
 			}
 		}
 
-		ur->add_do_method(this, "replace_node", selected, new_node, false);
-		ur->add_do_method(new_node, "set_scene_file_path", new_scene_file_path);
-		ur->add_do_reference(new_node);
+		undo_redo->add_do_method(this, "replace_node", selected, new_node, false);
+		undo_redo->add_do_method(new_node, "set_scene_file_path", new_scene_file_path);
+		undo_redo->add_do_reference(new_node);
 
 		if (new_is_scene) {
 			for (int i = 0; i < new_node->get_child_count(); i++) {
 				Node *child = new_node->get_child(i);
 				if (child->get_owner() == new_node) {
-					ur->add_undo_method(new_node, "add_child", child, true);
-					ur->add_undo_method(child, "set_owner", new_node);
-					ur->add_undo_reference(child);
+					undo_redo->add_undo_method(new_node, "add_child", child, true);
+					undo_redo->add_undo_method(child, "set_owner", new_node);
+					undo_redo->add_undo_reference(child);
 				}
 			}
 		}
@@ -4613,24 +4613,24 @@ void SceneTreeDock::paste_node_as_replacement() {
 			for (int i = 0; i < new_node->get_child_count(); i++) {
 				Node *child = new_node->get_child(i);
 				if (child->get_owner() == new_node) {
-					ur->add_undo_method(new_node, "remove_child", child);
+					undo_redo->add_undo_method(new_node, "remove_child", child);
 				}
 			}
 		}
 
-		ur->add_undo_method(this, "replace_node", new_node, selected, false);
-		ur->add_undo_method(selected, "set_scene_file_path", old_scene_file_path);
-		ur->add_undo_reference(selected);
+		undo_redo->add_undo_method(this, "replace_node", new_node, selected, false);
+		undo_redo->add_undo_method(selected, "set_scene_file_path", old_scene_file_path);
+		undo_redo->add_undo_reference(selected);
 
 		if (old_is_scene) {
 			for (Node *child : old_children) {
-				ur->add_undo_method(selected, "add_child", child, true);
-				ur->add_undo_method(child, "set_owner", selected);
-				ur->add_undo_reference(child);
+				undo_redo->add_undo_method(selected, "add_child", child, true);
+				undo_redo->add_undo_method(child, "set_owner", selected);
+				undo_redo->add_undo_reference(child);
 			}
 		}
 
-		ur->commit_action(false);
+		undo_redo->commit_action(false);
 	}
 }
 

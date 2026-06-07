@@ -617,15 +617,15 @@ void LocalizationEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	setting_value.remove_at(index_from);
 	setting_value.insert(target_index, path);
 
-	EditorUndoRedoManager *ur_man = EditorUndoRedoManager::get_singleton();
-	ur_man->create_action(TTR("Rearrange Localization Items"));
-	ur_man->add_do_method(ProjectSettings::get_singleton(), "set", setting, setting_value);
-	ur_man->add_do_method(ProjectSettings::get_singleton(), "save");
-	ur_man->add_do_method(this, "update_translations");
-	ur_man->add_undo_method(ProjectSettings::get_singleton(), "set", setting, original_setting_value);
-	ur_man->add_undo_method(ProjectSettings::get_singleton(), "save");
-	ur_man->add_undo_method(this, "update_translations");
-	ur_man->commit_action();
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Rearrange Localization Items"));
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", setting, setting_value);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "save");
+	undo_redo->add_do_method(this, "update_translations");
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", setting, original_setting_value);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "save");
+	undo_redo->add_undo_method(this, "update_translations");
+	undo_redo->commit_action();
 }
 
 void LocalizationEditor::update_translations() {

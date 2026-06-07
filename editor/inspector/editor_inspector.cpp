@@ -1996,19 +1996,19 @@ void EditorInspectorCategory::_handle_menu_option(int p_option) {
 			}
 			const Dictionary clipboard = EditorInspector::get_property_clipboard_value();
 
-			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(TTR("Paste category properties"));
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Paste category properties"));
 			for (EditorProperty *property : category_properties) {
 				if (property->is_read_only()) {
 					continue;
 				}
 				const StringName &property_name = property->get_edited_property();
 				if (clipboard.has(property_name)) {
-					ur->add_do_property(property->get_edited_object(), property_name, clipboard[property_name]);
-					ur->add_undo_property(property->get_edited_object(), property_name, property->get_edited_property_value());
+					undo_redo->add_do_property(property->get_edited_object(), property_name, clipboard[property_name]);
+					undo_redo->add_undo_property(property->get_edited_object(), property_name, property->get_edited_property_value());
 				}
 			}
-			ur->commit_action();
+			undo_redo->commit_action();
 		} break;
 
 		case MENU_OPEN_DOCS: {
@@ -2817,19 +2817,19 @@ void EditorInspectorSection::menu_option(int p_option) const {
 			}
 			const Dictionary clipboard = EditorInspector::get_property_clipboard_value();
 
-			EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
-			ur->create_action(TTR("Paste section properties"));
+			EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+			undo_redo->create_action(TTR("Paste section properties"));
 			for (EditorProperty *property : section_properties) {
 				if (property->is_read_only()) {
 					continue;
 				}
 				const StringName &property_name = property->get_edited_property();
 				if (clipboard.has(property_name)) {
-					ur->add_do_property(property->get_edited_object(), property_name, clipboard[property_name]);
-					ur->add_undo_property(property->get_edited_object(), property_name, property->get_edited_property_value());
+					undo_redo->add_do_property(property->get_edited_object(), property_name, clipboard[property_name]);
+					undo_redo->add_undo_property(property->get_edited_object(), property_name, property->get_edited_property_value());
 				}
 			}
-			ur->commit_action();
+			undo_redo->commit_action();
 		} break;
 	}
 }

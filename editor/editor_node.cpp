@@ -8404,10 +8404,11 @@ EditorNode::EditorNode() {
 	EditorPropertyNameProcessor *epnp = memnew(EditorPropertyNameProcessor);
 	add_child(epnp);
 
-	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
-	EditorUndoRedoManager::get_singleton()->connect("version_changed", callable_mp(this, &EditorNode::_update_unsaved_cache));
-	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
-	EditorUndoRedoManager::get_singleton()->connect("history_changed", callable_mp(this, &EditorNode::_update_unsaved_cache));
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->connect("version_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
+	undo_redo->connect("version_changed", callable_mp(this, &EditorNode::_update_unsaved_cache));
+	undo_redo->connect("history_changed", callable_mp(this, &EditorNode::_update_undo_redo_allowed));
+	undo_redo->connect("history_changed", callable_mp(this, &EditorNode::_update_unsaved_cache));
 	ProjectSettings::get_singleton()->connect("settings_changed", callable_mp(this, &EditorNode::_update_from_settings));
 	GDExtensionManager::get_singleton()->connect("extensions_reloaded", callable_mp(this, &EditorNode::_gdextensions_reloaded));
 

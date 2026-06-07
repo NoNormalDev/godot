@@ -75,20 +75,21 @@ void AudioStreamInteractiveTransitionEditor::_edited() {
 	int filler = use_filler ? filler_clip->get_selected() - 1 : 0;
 	bool hold = hold_previous->is_pressed();
 
-	EditorUndoRedoManager::get_singleton()->create_action(TTR("Edit Transitions"));
+	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
+	undo_redo->create_action(TTR("Edit Transitions"));
 	for (int i = 0; i < selected.size(); i++) {
 		if (!enabled) {
 			if (audio_stream_interactive->has_transition(selected[i].x, selected[i].y)) {
-				EditorUndoRedoManager::get_singleton()->add_do_method(audio_stream_interactive, "erase_transition", selected[i].x, selected[i].y);
+				undo_redo->add_do_method(audio_stream_interactive, "erase_transition", selected[i].x, selected[i].y);
 			}
 		} else {
-			EditorUndoRedoManager::get_singleton()->add_do_method(audio_stream_interactive, "add_transition", selected[i].x, selected[i].y, from, to, fade, beats, use_filler, filler, hold);
+			undo_redo->add_do_method(audio_stream_interactive, "add_transition", selected[i].x, selected[i].y, from, to, fade, beats, use_filler, filler, hold);
 		}
 	}
-	EditorUndoRedoManager::get_singleton()->add_undo_property(audio_stream_interactive, "_transitions", audio_stream_interactive->get("_transitions"));
-	EditorUndoRedoManager::get_singleton()->add_do_method(this, "_update_transitions");
-	EditorUndoRedoManager::get_singleton()->add_undo_method(this, "_update_transitions");
-	EditorUndoRedoManager::get_singleton()->commit_action();
+	undo_redo->add_undo_property(audio_stream_interactive, "_transitions", audio_stream_interactive->get("_transitions"));
+	undo_redo->add_do_method(this, "_update_transitions");
+	undo_redo->add_undo_method(this, "_update_transitions");
+	undo_redo->commit_action();
 }
 
 void AudioStreamInteractiveTransitionEditor::_update_selection() {

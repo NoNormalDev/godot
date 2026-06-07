@@ -870,13 +870,13 @@ void Path3DEditorPlugin::_create_curve() {
 	Ref<Curve3D> new_curve;
 	new_curve.instantiate();
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-	undo_redo->create_action(TTR("Create Curve in Path3D"));
-	undo_redo->add_do_property(path, "curve", new_curve);
-	undo_redo->add_undo_property(path, "curve", Ref<Curve3D>());
-	undo_redo->add_do_method(this, "_update_toolbar");
-	undo_redo->add_undo_method(this, "_update_toolbar");
-	undo_redo->commit_action();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Create Curve in Path3D"));
+	ur->add_do_property(path, "curve", new_curve);
+	ur->add_undo_property(path, "curve", Ref<Curve3D>());
+	ur->add_do_method(this, "_update_toolbar");
+	ur->add_undo_method(this, "_update_toolbar");
+	ur->commit_action();
 }
 
 void Path3DEditorPlugin::_confirm_clear_points() {
@@ -888,13 +888,13 @@ void Path3DEditorPlugin::_confirm_clear_points() {
 }
 
 void Path3DEditorPlugin::_clear_points() {
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
 	PackedVector3Array points = path->get_curve()->get_points().duplicate();
 
-	undo_redo->create_action(TTR("Clear Curve Points"));
-	undo_redo->add_do_method(this, "_clear_curve_points");
-	undo_redo->add_undo_method(this, "_restore_curve_points", points);
-	undo_redo->commit_action();
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Clear Curve Points"));
+	ur->add_do_method(this, "_clear_curve_points");
+	ur->add_undo_method(this, "_restore_curve_points", points);
+	ur->commit_action();
 }
 
 void Path3DEditorPlugin::_clear_curve_points() {
@@ -1283,16 +1283,14 @@ void Path3DGizmoPlugin::commit_subgizmos(const EditorNode3DGizmo *p_gizmo, const
 		return;
 	}
 
-	EditorUndoRedoManager *undo_redo = EditorUndoRedoManager::get_singleton();
-
-	undo_redo->create_action(TTR("Set Curve Point Position"));
-
+	EditorUndoRedoManager *ur = EditorUndoRedoManager::get_singleton();
+	ur->create_action(TTR("Set Curve Point Position"));
 	for (int i = 0; i < p_ids.size(); ++i) {
 		const int idx = p_ids[i];
-		undo_redo->add_do_method(curve.ptr(), "set_point_position", idx, curve->get_point_position(idx));
-		undo_redo->add_undo_method(curve.ptr(), "set_point_position", idx, p_restore[i].origin);
+		ur->add_do_method(curve.ptr(), "set_point_position", idx, curve->get_point_position(idx));
+		ur->add_undo_method(curve.ptr(), "set_point_position", idx, p_restore[i].origin);
 	}
-	undo_redo->commit_action();
+	ur->commit_action();
 }
 
 int Path3DGizmoPlugin::get_priority() const {
