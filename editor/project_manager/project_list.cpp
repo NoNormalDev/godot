@@ -848,18 +848,27 @@ void ProjectList::_load_project_icon(int p_index) {
 	Item &item = _projects.write[p_index];
 
 	Ref<Texture2D> default_icon = get_editor_theme_icon(SNAME("DefaultProjectIcon"));
-	Ref<Texture2D> icon;
-	if (!item.icon.is_empty()) {
-		Ref<Image> img;
-		img.instantiate();
-		Error err = img->load(item.icon.replace_first("res://", item.path + "/"));
-		if (err == OK) {
-			img->resize(default_icon->get_width(), default_icon->get_height(), Image::INTERPOLATE_LANCZOS);
-			icon = ImageTexture::create_from_image(img);
-		}
+	item.control->set_project_icon(default_icon);
+
+	if (item.icon.is_empty()) {
+		return;
 	}
+
+	String icon_path = item.icon.replace_first("res://", item.path + "/");
+	// Print an error here, the img->load() one is more complicated and less helpful to the user.
+	ERR_FAIL_COND_MSG(!FileAccess::exists(icon_path), "Project icon file \"" + icon_path + "\" doesn't exist.");
+
+	Ref<Image> img;
+	img.instantiate();
+	if (img->load(icon_path) != OK) {
+		return;
+	}
+	img->resize(default_icon->get_width(), default_icon->get_height(), Image::INTERPOLATE_LANCZOS);
+
+	Ref<Texture2D> icon;
+	icon = ImageTexture::create_from_image(img);
 	if (icon.is_null()) {
-		icon = default_icon;
+		return;
 	}
 
 	item.control->set_project_icon(icon);
