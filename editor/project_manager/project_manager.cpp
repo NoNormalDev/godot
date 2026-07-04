@@ -837,6 +837,7 @@ void ProjectManager::_erase_project() {
 
 	erase_ask_label->set_text(confirm_message);
 	//delete_project_contents->set_pressed(false);
+	erase_ask->reset_size();
 	erase_ask->popup_centered();
 }
 
