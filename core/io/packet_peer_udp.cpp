@@ -117,12 +117,8 @@ Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	GODOT_GCC_WARNING_PUSH
 	GODOT_GCC_PRAGMA(GCC diagnostic warning "-Wstringop-overflow=0") // Can't "ignore" this for some reason.
 
-	uint32_t size = 0;
-	uint8_t ipv6[16] = {};
-	rb.read(ipv6, 16, true);
-	packet_ip.set_ipv6(ipv6);
-	rb.read((uint8_t *)&packet_port, 4, true);
-	rb.read((uint8_t *)&size, 4, true);
+	int size = _read_packet_header_from_ringbuffer();
+
 	rb.read(packet_buffer, size, true);
 	--queue_count;
 	*r_buffer = packet_buffer;
@@ -131,6 +127,42 @@ Error PacketPeerUDP::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 	GODOT_GCC_WARNING_POP
 
 	return OK;
+}
+
+Error PacketPeerUDP::get_packet_buffer(Vector<uint8_t> &r_buffer) {
+	Error err = _poll();
+	if (err != OK) {
+		return err;
+	}
+	if (queue_count == 0) {
+		return ERR_UNAVAILABLE;
+	}
+
+	int size = _read_packet_header_from_ringbuffer();
+
+	r_buffer.resize(size);
+	rb.read(r_buffer.ptrw(), size, true);
+
+	--queue_count;
+
+	return OK;
+}
+
+int PacketPeerUDP::_read_packet_header_from_ringbuffer() {
+	if (queue_count == 0) {
+		return 0;
+	}
+
+	uint8_t ipv6[16] = {};
+	rb.read(ipv6, 16, true);
+	packet_ip.set_ipv6(ipv6);
+
+	rb.read((uint8_t *)&packet_port, 4, true);
+
+	uint32_t size = 0;
+	rb.read((uint8_t *)&size, 4, true);
+
+	return size;
 }
 
 Error PacketPeerUDP::put_packet(const uint8_t *p_buffer, int p_buffer_size) {

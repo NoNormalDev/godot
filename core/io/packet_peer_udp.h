@@ -66,6 +66,8 @@ protected:
 	Error _set_dest_address(const String &p_address, int p_port);
 	Error _poll();
 
+	int _read_packet_header_from_ringbuffer();
+
 public:
 	void set_blocking_mode(bool p_enable);
 
@@ -87,6 +89,7 @@ public:
 
 	Error put_packet(const uint8_t *p_buffer, int p_buffer_size) override;
 	Error get_packet(const uint8_t **r_buffer, int &r_buffer_size) override;
+	Error get_packet_buffer(Vector<uint8_t> &r_buffer) override;
 	int get_available_packet_count() const override;
 	int get_max_packet_size() const override;
 	void set_broadcast_enabled(bool p_enabled);
