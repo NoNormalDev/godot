@@ -707,6 +707,7 @@ void EditorNode::_update_system_menu_icons(bool p_dark_mode) {
 
 	project_menu->set_item_icon(project_menu->get_item_index(PROJECT_OPEN_SETTINGS), get_editor_theme_native_menu_icon(SNAME("ClassList"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode));
 	project_menu->set_item_icon(project_menu->get_item_index(PROJECT_EXPORT), get_editor_theme_native_menu_icon(SNAME("ResourcePreloader"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode));
+	project_menu->set_item_icon(project_menu->get_item_index(PROJECT_RELOAD_CURRENT_PROJECT), get_editor_theme_native_menu_icon(SNAME("Reload"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode));
 	project_menu->set_item_icon(project_menu->get_item_index(PROJECT_QUIT_TO_PROJECT_MANAGER), get_editor_theme_native_menu_icon(SNAME("Close"), menu_type == MENU_TYPE_GLOBAL, p_dark_mode));
 
 #ifdef MACOS_ENABLED
