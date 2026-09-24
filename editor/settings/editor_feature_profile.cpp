@@ -1027,7 +1027,6 @@ EditorFeatureProfileManager::EditorFeatureProfileManager() {
 
 	description_bit = memnew(EditorHelpBit);
 	description_bit->set_content_height_limits(80 * EDSCALE, 80 * EDSCALE);
-	description_bit->override_custom_minimum_width(320 * EDSCALE);
 	description_bit->connect("request_hide", callable_mp(this, &EditorFeatureProfileManager::_hide_requested));
 	property_list_vbc->add_margin_child(TTRC("Description:"), description_bit, false);
 

@@ -4268,7 +4268,7 @@ void EditorHelpBit::_update_labels() {
 	}
 
 	if (is_inside_tree()) {
-		update_content_height();
+		callable_mp(this, &EditorHelpBit::update_content_height).call_deferred();
 	}
 }
 
@@ -4909,11 +4909,6 @@ void EditorHelpBit::update_content_height() {
 	content->set_custom_minimum_size(Size2(content->get_custom_minimum_size().x, CLAMP(content_height, content_min_height, content_max_height)));
 }
 
-void EditorHelpBit::override_custom_minimum_width(float p_min_width) {
-	title->set_custom_minimum_size(Size2(p_min_width, title->get_custom_minimum_size().y));
-	content->set_custom_minimum_size(Size2(p_min_width, content->get_custom_minimum_size().y));
-}
-
 EditorHelpBit::EditorHelpBit(
 		const String &p_symbol,
 		const String &p_prologue,
@@ -4924,7 +4919,7 @@ EditorHelpBit::EditorHelpBit(
 
 	title = memnew(RichTextLabel);
 	title->set_theme_type_variation(p_in_tooltip ? "EditorHelpBitTooltipTitle" : "EditorHelpBitTitle");
-	title->set_custom_minimum_size(Size2(640 * EDSCALE, 0)); // GH-93031. Set the minimum width even if `fit_content` is true.
+	title->set_custom_minimum_size(Size2(320 * EDSCALE, 0)); // GH-93031. Set the minimum width even if `fit_content` is true.
 	title->set_fit_content(true);
 	title->set_selection_enabled(p_allow_selection);
 	title->set_context_menu_enabled(p_allow_selection);
@@ -4939,8 +4934,7 @@ EditorHelpBit::EditorHelpBit(
 	content = memnew(RichTextLabel);
 	content->set_theme_type_variation(p_in_tooltip ? "EditorHelpBitTooltipContent" : "EditorHelpBitContent");
 	content->set_autowrap_trim_flags(TextServer::BREAK_TRIM_END_EDGE_SPACES);
-	content->set_custom_minimum_size(Size2(640 * EDSCALE, content_min_height));
-	content->set_v_size_flags(Control::SIZE_EXPAND_FILL);
+	content->set_custom_minimum_size(Size2(320 * EDSCALE, content_min_height));
 	content->set_selection_enabled(p_allow_selection);
 	content->set_context_menu_enabled(p_allow_selection);
 	content->set_selection_modifier(callable_mp_static(_fix_selection));
@@ -5074,6 +5068,7 @@ Control *EditorHelpBitTooltip::make_tooltip(
 
 	if (has_doc_tooltip) {
 		EditorHelpBit *help_bit = memnew(EditorHelpBit(p_symbol, p_prologue, p_use_class_prefix, false, true));
+		help_bit->set_custom_minimum_size(Size2(640 * EDSCALE, 0));
 		help_bit->connect("request_hide", callable_mp(static_cast<Node *>(tooltip), &Node::queue_free));
 		tooltip->vbox->add_child(help_bit);
 		help_bit->update_content_height();
