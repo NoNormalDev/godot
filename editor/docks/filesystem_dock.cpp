@@ -4206,7 +4206,11 @@ void FileSystemDock::_update_import_dock() {
 	Vector<String> efiles;
 	String extension;
 	for (const String &fpath : selected) {
-		_get_imported_files(fpath, extension, efiles);
+		bool should_continue = _get_imported_files(fpath, extension, efiles);
+		if (!should_continue) {
+			ImportDock::get_singleton()->clear();
+			return;
+		}
 	}
 
 	if (efiles.is_empty()) {
