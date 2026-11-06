@@ -3330,7 +3330,7 @@ void EditorNode::_edit_current(bool p_skip_foreign, bool p_skip_inspector_update
 	}
 
 	InspectorDock::get_singleton()->set_info(
-			info_is_warning ? TTR("Changes may be lost!") : TTR("This object is read-only."),
+			info_is_warning ? TTRC("Changes may be lost!") : TTRC("This object is read-only."),
 			editable_info,
 			info_is_warning);
 

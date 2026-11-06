@@ -477,8 +477,8 @@ void ScenePaint2DEditor::_edit_properties() {
 	if (InspectorDock::get_inspector_singleton()->get_edited_object() != instance) {
 		InspectorDock::get_inspector_singleton()->edit(instance);
 		InspectorDock::get_singleton()->set_info(
-				TTR("Editing instance properties"),
-				TTR("Edited properties will apply to the newly painted instances. They will be stored locally in the current scene."), true);
+				TTRC("Editing instance properties"),
+				TTRC("Edited properties will apply to the newly painted instances. They will be stored locally in the current scene."), true);
 	}
 }
 

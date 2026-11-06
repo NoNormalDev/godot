@@ -9067,7 +9067,7 @@ void AnimationMarkerEdit::_update_key_edit() {
 
 		EditorNode::get_singleton()->push_item(key_edit);
 
-		InspectorDock::get_singleton()->set_info(TTR("Marker name is read-only in the inspector."), TTR("A marker's name can only be changed by right-clicking it in the animation editor and selecting \"Rename Marker\", in order to make sure that marker names are all unique."), true);
+		InspectorDock::get_singleton()->set_info(TTRC("Marker name is read-only in the inspector."), TTR("A marker's name can only be changed by right-clicking it in the animation editor and selecting \"Rename Marker\", in order to make sure that marker names are all unique."), true);
 	} else if (selection.size() > 1) {
 		multi_key_edit = memnew(AnimationMultiMarkerKeyEdit);
 		multi_key_edit->animation = animation;
