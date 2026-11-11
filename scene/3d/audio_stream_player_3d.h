@@ -81,17 +81,12 @@ private:
 	// Internally used to take doppler tracking into account.
 	float actual_pitch_scale = 1.0;
 
-	uint64_t last_mix_count = -1;
-	bool force_update_panning = false;
-
 	static void _calc_output_vol(const Vector3 &source_dir, real_t tightness, FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &output);
 	static AudioFrame _calc_output_vol_stereo(const Vector3 &source_dir, real_t panning_strength);
 
 #ifndef PHYSICS_3D_DISABLED
 	void _calc_reverb_vol(Area3D *area, Vector3 listener_area_pos, const FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &direct_path_vol, FixedVector<AudioFrame, VOLUME_VECTOR_SIZE> &reverb_vol);
 #endif // PHYSICS_3D_DISABLED
-
-	static void _listener_changed_cb(void *self) { reinterpret_cast<AudioStreamPlayer3D *>(self)->force_update_panning = true; }
 
 	void _set_playing(bool p_enable);
 	bool _is_active() const;

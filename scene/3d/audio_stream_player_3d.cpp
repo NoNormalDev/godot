@@ -267,11 +267,6 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			velocity_tracker->reset(get_global_transform().origin);
-			AudioServer::get_singleton()->add_listener_changed_callback(_listener_changed_cb, this);
-		} break;
-
-		case NOTIFICATION_EXIT_TREE: {
-			AudioServer::get_singleton()->remove_listener_changed_callback(_listener_changed_cb, this);
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -282,16 +277,15 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// Update anything related to position first, if possible of course.
-			Vector<AudioFrame> volume_vector;
-			if (setplay.get() > 0 || (internal->active.is_set() && last_mix_count != AudioServer::get_singleton()->get_mix_count()) || force_update_panning) {
-				force_update_panning = false;
-				volume_vector = _update_panning();
+
+			if (internal->active.is_set()) {
+				_update_panning();
 			}
 
 			if (setplayback.is_valid() && setplay.get() >= 0) {
 				internal->active.set();
 				HashMap<StringName, Vector<AudioFrame>> bus_map;
-				bus_map[_get_actual_bus()] = volume_vector;
+				bus_map[_get_actual_bus()] = _update_panning();
 				AudioServer::get_singleton()->start_playback_stream(setplayback, bus_map, setplay.get(), actual_pitch_scale, linear_attenuation, attenuation_filter_cutoff_hz);
 				setplayback.unref();
 				setplay.set(-1);
