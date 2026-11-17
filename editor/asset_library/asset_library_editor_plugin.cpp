@@ -849,11 +849,14 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		download_error->popup_centered();
 		// Let the user retry the download.
 		retry_button->show();
+		_update_spacer();
 		return;
 	}
 
 	install_button->show();
 	status->set_text(TTRC("Ready to install."));
+
+	_update_spacer();
 
 	// Automatically prompt for installation once the download is completed
 	// as long as the main window is focused, to not clash with other subwindows.
@@ -875,24 +878,34 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, const Stri
 	_make_request();
 }
 
+void EditorAssetLibraryItemDownload::_update_spacer() {
+	Ref<StyleBoxFlat> button_style = get_theme_stylebox(CoreStringName(normal), SNAME("Button"));
+	ERR_FAIL_COND(button_style.is_null());
+
+	Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Button"));
+	ERR_FAIL_COND(font.is_null());
+	int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Button"));
+
+	int button_height = button_style->get_minimum_size().height + font->get_height(font_size);
+
+	spacer->set_custom_minimum_size(Size2(0, 8 * EDSCALE + button_height - progress_hbox->get_combined_minimum_size().y));
+}
+
 void EditorAssetLibraryItemDownload::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 			panel->add_theme_style_override(SceneStringName(panel), get_theme_stylebox(SceneStringName(panel), SNAME("AssetLib")));
 			version->add_theme_color_override(SceneStringName(font_color), get_theme_color(SNAME("faded_text"), SNAME("AssetLib")));
 			dismiss_button->set_texture_normal(get_theme_icon(SNAME("dismiss"), SNAME("AssetLib")));
-			spacer->set_custom_minimum_size(Size2(0, 8 * EDSCALE));
-
-			// Avoid sudden size changes by making the container have the same height as the buttons.
-			Ref<StyleBoxFlat> button_style = get_theme_stylebox(CoreStringName(normal), SNAME("Button"));
-			Ref<Font> font = get_theme_font(SceneStringName(font), SNAME("Button"));
-			int font_size = get_theme_font_size(SceneStringName(font_size), SNAME("Button"));
-			int button_height = button_style->get_minimum_size().height + font->get_height(font_size);
-			progress_hbox->set_custom_minimum_size(Size2(0, button_height));
+			spacer2->set_custom_minimum_size(get_theme_stylebox(CoreStringName(normal), SNAME("VBoxContainer"))->get_minimum_size() / 4.0); // 1/4, as we want half (1/2) of one vertical margin (1/2 of top & bottom).
+			callable_mp(this, &EditorAssetLibraryItemDownload::_update_spacer).call_deferred();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
-			progress->show();
+			if (!progress->is_visible()) {
+				progress->show();
+				_update_spacer();
+			}
 
 			if (download->get_downloaded_bytes() > 0) {
 				progress->set_max(download->get_body_size());
@@ -966,7 +979,10 @@ void EditorAssetLibraryItemDownload::install() {
 
 void EditorAssetLibraryItemDownload::_make_request() {
 	// Hide the Retry button if we've just pressed it.
-	retry_button->hide();
+	if (retry_button->is_visible()) {
+		retry_button->hide();
+		_update_spacer();
+	}
 
 	download->cancel_request();
 	download->set_download_file(EditorPaths::get_singleton()->get_cache_dir().path_join("tmp_asset_" + asset_id) + ".zip");
@@ -992,7 +1008,8 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	panel->add_child(hb);
 	icon = memnew(TextureRect);
 	icon->set_stretch_mode(TextureRect::STRETCH_KEEP_ASPECT_CENTERED);
-	icon->set_v_size_flags(SIZE_SHRINK_BEGIN);
+	icon->set_v_size_flags(SIZE_EXPAND_FILL);
+	icon->set_expand_mode(TextureRect::EXPAND_FIT_WIDTH_PROPORTIONAL);
 	hb->add_child(icon);
 
 	VBoxContainer *vb = memnew(VBoxContainer);
@@ -1048,7 +1065,10 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	progress_hbox->add_child(install_button);
 	install_button->connect(SceneStringName(pressed), callable_mp(this, &EditorAssetLibraryItemDownload::install));
 
-	set_custom_minimum_size(Size2(400 * EDSCALE, 0));
+	spacer2 = memnew(Control);
+	vb->add_child(spacer2);
+
+	set_custom_minimum_size(Size2(460 * EDSCALE, 0));
 
 	download = memnew(HTTPRequest);
 	panel->add_child(download);

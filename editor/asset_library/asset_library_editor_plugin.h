@@ -220,6 +220,7 @@ class EditorAssetLibraryItemDownload : public MarginContainer {
 	TextureButton *dismiss_button = nullptr;
 	HBoxContainer *progress_hbox = nullptr;
 	Control *spacer = nullptr;
+	Control *spacer2 = nullptr;
 
 	AcceptDialog *download_error = nullptr;
 	HTTPRequest *download = nullptr;
@@ -238,6 +239,7 @@ class EditorAssetLibraryItemDownload : public MarginContainer {
 	void _close();
 	void _make_request();
 	void _http_download_completed(int p_status, int p_code, const PackedStringArray &headers, const PackedByteArray &p_data);
+	void _update_spacer();
 
 protected:
 	void _notification(int p_what);
